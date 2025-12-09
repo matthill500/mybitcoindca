@@ -33,7 +33,6 @@ jobs:
         run: |
           semgrep scan \
             --config=.semgrep/rules/ \
-            --config=auto \
             --error \
             --verbose \
             --metrics=off \
