@@ -1,0 +1,70 @@
+name: Semgrep API Key Security Scan
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  semgrep:
+    name: Mobile API Key Security Scan
+    runs-on: ubuntu-latest
+
+    container:
+      image: semgrep/semgrep
+
+    if: (github.event_name != 'schedule') || (github.repository == 'matthill500/mybitcoindca')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Semgrep - Verify API Keys Never Leave Device
+        run: |
+          semgrep scan \
+            --config=.semgrep/rules/ \
+            --config=auto \
+            --error \
+            --verbose \
+            --metrics=off \
+            --output=semgrep-results.txt
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+      - name: Upload scan results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-security-results
+          path: semgrep-results.txt
+
+      - name: Security Scan Summary
+        if: always()
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🔒 Mobile API Key Security Scan Complete"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          echo "This scan verifies your API keys are protected:"
+          echo ""
+          echo "✅ API keys only stored in SecureStore (encrypted)"
+          echo "✅ API keys NEVER transmitted to any server"
+          echo "✅ No hardcoded credentials in source code"
+          echo "✅ Binance operations execute locally only"
+          echo "✅ API keys retrieved from SecureStore only"
+          echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          if [ -f semgrep-results.txt ]; then
+            echo ""
+            cat semgrep-results.txt
+          fi

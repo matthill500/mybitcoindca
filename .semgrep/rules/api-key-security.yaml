@@ -1,0 +1,158 @@
+rules:
+  # Rule 1: Ensure API keys only stored in SecureStore
+  - id: api-keys-must-use-secure-storage
+    patterns:
+      - pattern-either:
+          - pattern: AsyncStorage.setItem($KEY, $VALUE)
+          - pattern: localStorage.setItem($KEY, $VALUE)
+          - pattern: sessionStorage.setItem($KEY, $VALUE)
+      - metavariable-regex:
+          metavariable: $KEY
+          regex: .*(apiKey|API_KEY|binanceApiKey|binanceApiSecret|api_key|api_secret).*
+    message: |
+      API keys must be stored using SecureStore, not AsyncStorage or localStorage.
+      Use: await SecureStore.setItemAsync('key', value)
+      This ensures proper encryption of sensitive credentials.
+    severity: ERROR
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      cwe: "CWE-312: Cleartext Storage of Sensitive Information"
+      owasp: "A02:2021 - Cryptographic Failures"
+      confidence: HIGH
+
+  # Rule 2: Prevent sending API keys to any server
+  - id: no-api-key-transmission
+    patterns:
+      - pattern-either:
+          # Axios POST with API key
+          - pattern: |
+              axios.post($URL, {
+                ...,
+                $KEY: $VALUE,
+                ...
+              })
+          # Axios PUT with API key
+          - pattern: |
+              axios.put($URL, {
+                ...,
+                $KEY: $VALUE,
+                ...
+              })
+          # Fetch with API key in body
+          - pattern: |
+              fetch($URL, {
+                ...,
+                body: JSON.stringify({..., $KEY: $VALUE, ...}),
+                ...
+              })
+      - metavariable-regex:
+          metavariable: $KEY
+          regex: (apiKey|API_KEY|binanceApiKey|binanceApiSecret|api_key|api_secret)
+    message: |
+      ⚠️ CRITICAL SECURITY ISSUE ⚠️
+      API keys are being sent to a server endpoint!
+      API keys must NEVER leave the mobile device.
+      All Binance operations must execute directly from this device using the Binance SDK.
+    severity: ERROR
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      cwe: "CWE-319: Cleartext Transmission of Sensitive Information"
+      owasp: "A02:2021 - Cryptographic Failures"
+      confidence: HIGH
+
+  # Rule 3: Prevent hardcoded API keys
+  - id: no-hardcoded-api-keys
+    patterns:
+      - pattern-either:
+          - pattern: |
+              const $VAR = "$VALUE"
+          - pattern: |
+              let $VAR = "$VALUE"
+          - pattern: |
+              var $VAR = "$VALUE"
+      - metavariable-regex:
+          metavariable: $VAR
+          regex: .*(apiKey|API_KEY|binanceApiKey|binanceApiSecret|BINANCE_API).*
+      - metavariable-regex:
+          metavariable: $VALUE
+          regex: .{20,}
+    message: |
+      Hardcoded API key detected.
+      API keys should never be hardcoded in source code.
+      Use SecureStore to store user-provided API keys securely.
+    severity: ERROR
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      cwe: "CWE-798: Use of Hard-coded Credentials"
+      owasp: "A02:2021 - Cryptographic Failures"
+      confidence: MEDIUM
+
+  # Rule 4: Verify Binance SDK operations stay local
+  - id: binance-operations-local-only
+    patterns:
+      - pattern-either:
+          - pattern: |
+              axios.$METHOD($URL, {
+                ...
+              })
+          - pattern: |
+              fetch($URL, {
+                ...
+              })
+      - metavariable-regex:
+          metavariable: $URL
+          regex: .*(withdraw|trade|order|buy|sell).*
+      - pattern-not-inside: |
+          import { Binance } from '...'
+    message: |
+      Ensure withdrawal/trade operations use the Binance SDK directly, not HTTP requests.
+      This ensures API keys are used locally and never transmitted.
+    severity: WARNING
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      confidence: MEDIUM
+
+  # Rule 5: API keys should only be retrieved from SecureStore
+  - id: api-keys-from-secure-storage-only
+    patterns:
+      - pattern-either:
+          - pattern: AsyncStorage.getItem($KEY)
+          - pattern: localStorage.getItem($KEY)
+      - metavariable-regex:
+          metavariable: $KEY
+          regex: .*(apiKey|API_KEY|binanceApiKey|binanceApiSecret).*
+    message: |
+      API keys should only be retrieved from SecureStore, not AsyncStorage or localStorage.
+      Use: await SecureStore.getItemAsync('key')
+    severity: ERROR
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      cwe: "CWE-312: Cleartext Storage of Sensitive Information"
+      confidence: HIGH
+
+  # Rule 6: Ensure API credentials in requests are local Binance SDK calls
+  - id: ensure-binance-sdk-usage
+    patterns:
+      - pattern: |
+          $HEADERS = {
+            ...,
+            'X-MBX-APIKEY': $KEY,
+            ...
+          }
+      - pattern-not-inside: |
+          import Binance from '...'
+          ...
+    message: |
+      Direct API header manipulation detected.
+      Use the official Binance SDK instead of manual HTTP requests.
+      This ensures secure, local-only API key usage.
+    severity: WARNING
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      confidence: MEDIUM

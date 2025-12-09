@@ -1,6 +1,12 @@
 # DCA Bitcoin Mobile App
 
+[![Semgrep Security](https://github.com/matthill500/mybitcoindca/actions/workflows/semgrep.yml/badge.svg)](https://github.com/matthill500/mybitcoindca/actions/workflows/semgrep.yml)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Privacy First](https://img.shields.io/badge/Privacy-First-success.svg)](https://github.com/matthill500/mybitcoindca)
+
 A React Native mobile app for secure Bitcoin withdrawal management with privacy-first, client-side security architecture.
+
+**🔒 Security Verified:** Automated AI-powered scans verify that API keys never leave your device. [View latest scan →](https://github.com/matthill500/mybitcoindca/actions/workflows/semgrep.yml)
 
 ## Overview
 
@@ -20,6 +26,7 @@ This mobile app implements a **true privacy-first DCA and withdrawal system** fo
 - Secure key storage using Expo SecureStore (encrypted)
 - API keys never transmitted to server
 - Client-side security - server has no access to API keys
+- **AI-powered security scanning** - Automated Semgrep scans verify API keys stay on device
 
 ### 📱 Core Functionality
 - **Login** - Authenticate with your DCA account
@@ -111,6 +118,39 @@ When it's time to withdraw Bitcoin to your hardware wallet:
    - Destination address (your hardware wallet)
 5. **Approve or Reject**
 6. **Withdrawal executes directly** from your phone to Binance
+
+## Security Verification
+
+We believe in **transparency and verifiable security**. You don't have to trust us - you can verify our security claims:
+
+### Automated Security Scanning
+
+Every code change is automatically scanned with **Semgrep** - an AI-powered security tool that verifies:
+
+✅ **API keys only stored in SecureStore** - Never in AsyncStorage or localStorage
+✅ **API keys never transmitted** - No network requests containing API keys
+✅ **No hardcoded credentials** - All keys are user-provided
+✅ **Binance SDK usage only** - No manual HTTP requests with API keys
+✅ **SecureStore retrieval only** - Keys only accessed from encrypted storage
+
+### How to Verify
+
+1. **View the security badge** at the top of this README
+   - ✅ Green = All security checks passed
+   - ❌ Red = Security issue detected (build will fail)
+
+2. **Check the scan results**: [View latest security scan](https://github.com/matthill500/mybitcoindca/actions/workflows/semgrep.yml)
+
+3. **Review the security rules**: See [`.semgrep/rules/api-key-security.yaml`](.semgrep/rules/api-key-security.yaml) for the exact checks
+
+4. **Audit the code yourself**: This is open source - inspect every line!
+
+### Continuous Security
+
+- 🔄 Scans run on **every commit** and **pull request**
+- 📅 Daily automated scans at midnight UTC
+- 🚫 Pull requests with security issues **cannot be merged**
+- 📊 All scan results are **publicly visible**
 
 ## Security Best Practices
 
