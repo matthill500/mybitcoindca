@@ -1,10 +1,10 @@
 # DCA Bitcoin Mobile App
 
-A React Native mobile app for secure Bitcoin withdrawal management with zero-knowledge architecture.
+A React Native mobile app for secure Bitcoin withdrawal management with privacy-first, client-side security architecture.
 
 ## Overview
 
-This mobile app implements a **true zero-knowledge withdrawal system** for your DCA Bitcoin platform:
+This mobile app implements a **true privacy-first withdrawal system** for your DCA Bitcoin platform:
 
 - **Binance** handles automated DCA purchases via recurring buy (set up by user directly)
 - **Server** has NO Binance API keys and cannot access the exchange at all
@@ -18,7 +18,7 @@ This mobile app implements a **true zero-knowledge withdrawal system** for your 
 - Passcode protection for app access
 - Secure key storage using Expo SecureStore (encrypted)
 - API keys never transmitted to server
-- Zero-knowledge architecture
+- Client-side security - server has no access to API keys
 
 ### 📱 Core Functionality
 - **Login** - Authenticate with your DCA account
@@ -289,4 +289,4 @@ For issues, questions, or contributions:
 
 ## License
 
-[Your License Here]
+MIT License - see [LICENSE](LICENSE) file for details.
