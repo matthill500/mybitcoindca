@@ -58,14 +58,14 @@ export default function DisclaimerScreen({ onAccept }) {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>🏢 This App is NOT an Exchange</Text>
           <Text style={styles.sectionText}>
-            This application is a <Text style={styles.bold}>third-party client interface</Text> for Binance.com.
+            This application is a <Text style={styles.bold}>third-party client interface </Text>
             We are NOT:
           </Text>
           <Text style={styles.bulletPoint}>• A cryptocurrency exchange</Text>
           <Text style={styles.bulletPoint}>• A broker or financial intermediary</Text>
           <Text style={styles.bulletPoint}>• A custodian of your funds</Text>
           <Text style={styles.sectionText}>
-            All trades and withdrawals are executed directly on your Binance account using Binance's services.
+            All trades and withdrawals are executed directly on your Exchange account using your Exchanges services.
           </Text>
         </View>
 
@@ -73,10 +73,10 @@ export default function DisclaimerScreen({ onAccept }) {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>🔑 You Control Your Funds</Text>
           <Text style={styles.sectionText}>
-            This app acts solely as a convenient interface to execute trades and withdrawals on <Text style={styles.bold}>YOUR</Text> Binance account.
+            This app acts solely as a convenient interface to execute trades and withdrawals on <Text style={styles.bold}>YOUR</Text> exchange account.
           </Text>
-          <Text style={styles.bulletPoint}>• You maintain full control of your Binance account</Text>
-          <Text style={styles.bulletPoint}>• All funds remain in YOUR Binance account</Text>
+          <Text style={styles.bulletPoint}>• You maintain full control of your exchange account</Text>
+          <Text style={styles.bulletPoint}>• All funds remain in YOUR exchange account</Text>
           <Text style={styles.bulletPoint}>• We NEVER hold, custody, or control your funds</Text>
           <Text style={styles.bulletPoint}>• Withdrawals go directly to YOUR specified wallet address</Text>
         </View>
@@ -85,7 +85,7 @@ export default function DisclaimerScreen({ onAccept }) {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>🔐 API Keys Stored Only on Your Device</Text>
           <Text style={styles.sectionText}>
-            Your Binance API keys are stored <Text style={styles.bold}>exclusively on your device</Text> using iOS Keychain encryption (Secure Enclave):
+            Your exchange API keys are stored <Text style={styles.bold}>exclusively on your device</Text> using iOS Keychain encryption (Secure Enclave):
           </Text>
           <Text style={styles.bulletPoint}>• Keys are encrypted using iOS Keychain</Text>
           <Text style={styles.bulletPoint}>• Keys NEVER leave your device</Text>
@@ -93,7 +93,7 @@ export default function DisclaimerScreen({ onAccept }) {
           <Text style={styles.bulletPoint}>• Keys are NEVER logged or transmitted to third parties</Text>
           <Text style={styles.bulletPoint}>• You can revoke or delete keys at any time in Settings</Text>
           <Text style={styles.sectionText}>
-            All API calls to Binance are made directly from your device to Binance's servers.
+            All API calls to your exchange are made directly from your device to your exxchanges servers.
           </Text>
         </View>
 
@@ -130,7 +130,7 @@ export default function DisclaimerScreen({ onAccept }) {
           </Text>
           <Text style={styles.bulletPoint}>• Profit or investment returns</Text>
           <Text style={styles.bulletPoint}>• Execution prices or timing</Text>
-          <Text style={styles.bulletPoint}>• Availability of Binance services</Text>
+          <Text style={styles.bulletPoint}>• Availability of your exchange services</Text>
           <Text style={styles.bulletPoint}>• Network conditions or fees</Text>
           <Text style={styles.sectionText}>
             This app does NOT provide financial, investment, or trading advice. Consult a licensed financial advisor before making investment decisions.
@@ -143,17 +143,17 @@ export default function DisclaimerScreen({ onAccept }) {
           <Text style={styles.bulletPoint}>• Verify all transaction details before approval</Text>
           <Text style={styles.bulletPoint}>• Double-check wallet addresses (irreversible)</Text>
           <Text style={styles.bulletPoint}>• Understand the risks before trading</Text>
-          <Text style={styles.bulletPoint}>• Keep your Binance account secure</Text>
+          <Text style={styles.bulletPoint}>• Keep your exchange account secure</Text>
           <Text style={styles.bulletPoint}>• Monitor your account for unauthorized activity</Text>
           <Text style={styles.bulletPoint}>• Comply with your local tax and regulatory requirements</Text>
         </View>
 
-        {/* Binance ToS */}
+        {/* Exchange ToS */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📄 Binance Terms Apply</Text>
+          <Text style={styles.sectionTitle}>📄 Exchange Terms Apply</Text>
           <Text style={styles.sectionText}>
-            By using this app, you acknowledge that you have a Binance account and agree to Binance's Terms of Service.
-            All trades and withdrawals are subject to Binance's policies, fees, and limitations.
+            By using this app, you acknowledge that you have an exchange account and agree to your exchanges Terms of Service.
+            All trades and withdrawals are subject to your exchanges policies, fees, and limitations.
           </Text>
         </View>
 

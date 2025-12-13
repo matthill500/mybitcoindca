@@ -8,9 +8,11 @@ import {
   ActivityIndicator,
   ScrollView,
   Platform,
+  Clipboard,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { executeWithdrawal, getWithdrawalFee } from '../services/binanceService';
-import { dcaAPI } from '../services/api';
+import { dcaAPI, authAPI } from '../services/api';
 import { useTheme } from '../contexts/ThemeContext';
 
 export default function WithdrawalApprovalScreen({ route, navigation }) {
@@ -19,10 +21,28 @@ export default function WithdrawalApprovalScreen({ route, navigation }) {
   const [loading, setLoading] = useState(false);
   const [networkFee, setNetworkFee] = useState(0);
   const [loadingFee, setLoadingFee] = useState(true);
+  const [manualMode, setManualMode] = useState(false);
+  const [loadingSettings, setLoadingSettings] = useState(true);
 
   useEffect(() => {
     fetchNetworkFee();
+    fetchSettings();
   }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const response = await authAPI.getSettings();
+      if (response.success) {
+        // appWithdrawal: true = app mode, false = manual mode
+        const appWithdrawal = response.data.settings.appWithdrawal ?? true;
+        setManualMode(!appWithdrawal);
+      }
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+    } finally {
+      setLoadingSettings(false);
+    }
+  };
 
   const fetchNetworkFee = async () => {
     try {
@@ -113,21 +133,87 @@ export default function WithdrawalApprovalScreen({ route, navigation }) {
     );
   };
 
+  const copyToClipboard = (text, label) => {
+    Clipboard.setString(text);
+    Alert.alert('Copied', `${label} copied to clipboard`);
+  };
+
+  const handleManualWithdrawalDone = async () => {
+    setLoading(true);
+    try {
+      // Report the manual withdrawal to the server for tracking
+      await dcaAPI.reportWithdrawal({
+        txId: null, // No txId for manual withdrawals
+        amount: withdrawalData.btcAmount,
+        fee: networkFee,
+        address: withdrawalData.address,
+        timestamp: new Date().toISOString(),
+        manual: true, // Flag to indicate this was a manual withdrawal
+      });
+
+      Alert.alert(
+        'Withdrawal Recorded',
+        'Please complete the withdrawal in Binance. The withdrawal has been recorded in your dashboard. Once confirmed on the blockchain, you can track it in your transaction history.',
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.goBack(),
+          },
+        ]
+      );
+    } catch (error) {
+      console.error('Failed to report manual withdrawal:', error);
+      // Still allow user to proceed even if reporting fails
+      Alert.alert(
+        'Withdrawal Initiated',
+        'Please complete the withdrawal in Binance. Note: This withdrawal may not appear in your dashboard statistics.',
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.goBack(),
+          },
+        ]
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const styles = createStyles(colors);
+
+  if (loadingSettings) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={styles.loadingText}>Loading...</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Withdrawal Request</Text>
-        <Text style={styles.subtitle}>Review transaction to YOUR wallet</Text>
-      </View>
-
-      <View style={styles.userControlCard}>
-        <Text style={styles.userControlTitle}>👤 You Control This Withdrawal</Text>
-        <Text style={styles.userControlText}>
-          This withdrawal will be executed directly from YOUR Binance account to YOUR specified Bitcoin wallet address. We do NOT control or custody these funds.
+        <Text style={styles.subtitle}>
+          {manualMode ? 'Manual withdrawal instructions' : 'Review transaction to YOUR wallet'}
         </Text>
       </View>
+
+      {manualMode ? (
+        <View style={styles.manualModeCard}>
+          <Text style={styles.manualModeTitle}>📋 Manual Withdrawal Instructions</Text>
+          <Text style={styles.manualModeText}>
+            Copy the details below and complete the withdrawal in Binance manually.
+          </Text>
+        </View>
+      ) : (
+        <View style={styles.userControlCard}>
+          <Text style={styles.userControlTitle}>👤 You Control This Withdrawal</Text>
+          <Text style={styles.userControlText}>
+            This withdrawal will be executed directly from YOUR Binance account to YOUR specified Bitcoin wallet address. We do NOT control or custody these funds.
+          </Text>
+        </View>
+      )}
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Transaction Details</Text>
@@ -141,7 +227,17 @@ export default function WithdrawalApprovalScreen({ route, navigation }) {
 
         <View style={styles.detailRow}>
           <Text style={styles.label}>Amount (BTC)</Text>
-          <Text style={[styles.value, styles.highlight]}>{withdrawalData.btcAmount} BTC</Text>
+          {manualMode ? (
+            <TouchableOpacity
+              style={styles.copyButton}
+              onPress={() => copyToClipboard(withdrawalData.btcAmount.toString(), 'Amount')}
+            >
+              <Text style={[styles.value, styles.highlight]}>{withdrawalData.btcAmount} BTC</Text>
+              <Ionicons name="copy-outline" size={20} color={colors.primary} style={styles.copyIcon} />
+            </TouchableOpacity>
+          ) : (
+            <Text style={[styles.value, styles.highlight]}>{withdrawalData.btcAmount} BTC</Text>
+          )}
         </View>
 
         <View style={styles.separator} />
@@ -168,7 +264,17 @@ export default function WithdrawalApprovalScreen({ route, navigation }) {
 
         <View style={styles.detailRow}>
           <Text style={styles.label}>Network</Text>
-          <Text style={styles.value}>Bitcoin (BTC)</Text>
+          {manualMode ? (
+            <TouchableOpacity
+              style={styles.copyButton}
+              onPress={() => copyToClipboard('BTC', 'Network')}
+            >
+              <Text style={styles.value}>Bitcoin (BTC)</Text>
+              <Ionicons name="copy-outline" size={20} color={colors.primary} style={styles.copyIcon} />
+            </TouchableOpacity>
+          ) : (
+            <Text style={styles.value}>Bitcoin (BTC)</Text>
+          )}
         </View>
 
         <View style={styles.separator} />
@@ -178,52 +284,112 @@ export default function WithdrawalApprovalScreen({ route, navigation }) {
           <Text style={styles.addressNote}>
             Ensure this is YOUR wallet address that YOU control:
           </Text>
-          <Text style={styles.address}>{withdrawalData.address}</Text>
+          <View style={styles.addressWrapper}>
+            <Text style={styles.address}>{withdrawalData.address}</Text>
+            {manualMode && (
+              <TouchableOpacity
+                style={styles.addressCopyButton}
+                onPress={() => copyToClipboard(withdrawalData.address, 'Address')}
+              >
+                <Ionicons name="copy-outline" size={24} color={colors.primary} />
+                <Text style={styles.copyButtonText}>Copy Address</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </View>
 
-      <View style={styles.warningCard}>
-        <Text style={styles.warningTitle}>⚠️ Important - Verify Before Approving</Text>
-        <Text style={styles.warningText}>
-          • This withdrawal executes on YOUR Binance account
-        </Text>
-        <Text style={styles.warningText}>
-          • Funds go directly to YOUR specified wallet address
-        </Text>
-        <Text style={styles.warningText}>
-          • Double-check the destination address (case-sensitive)
-        </Text>
-        <Text style={styles.warningText}>
-          • Bitcoin transactions are IRREVERSIBLE once confirmed
-        </Text>
-        <Text style={styles.warningText}>
-          • Network fees are paid to Bitcoin miners (not to us)
-        </Text>
-        <Text style={styles.warningText}>
-          • We do NOT hold, custody, or control your funds
-        </Text>
-      </View>
+      {manualMode ? (
+        <View style={styles.instructionsCard}>
+          <Text style={styles.instructionsTitle}>📖 Steps to Complete</Text>
+          <Text style={styles.instructionsText}>
+            1. Open the Binance app or website
+          </Text>
+          <Text style={styles.instructionsText}>
+            2. Go to Wallet → Fiat and Spot → Withdraw
+          </Text>
+          <Text style={styles.instructionsText}>
+            3. Select Bitcoin (BTC)
+          </Text>
+          <Text style={styles.instructionsText}>
+            4. Paste the address and amount using the copy buttons above
+          </Text>
+          <Text style={styles.instructionsText}>
+            5. Select Network: Bitcoin (BTC)
+          </Text>
+          <Text style={styles.instructionsText}>
+            6. Review and confirm the withdrawal in Binance
+          </Text>
+        </View>
+      ) : (
+        <View style={styles.warningCard}>
+          <Text style={styles.warningTitle}>⚠️ Important - Verify Before Approving</Text>
+          <Text style={styles.warningText}>
+            • This withdrawal executes on YOUR Binance account
+          </Text>
+          <Text style={styles.warningText}>
+            • Funds go directly to YOUR specified wallet address
+          </Text>
+          <Text style={styles.warningText}>
+            • Double-check the destination address (case-sensitive)
+          </Text>
+          <Text style={styles.warningText}>
+            • Bitcoin transactions are IRREVERSIBLE once confirmed
+          </Text>
+          <Text style={styles.warningText}>
+            • Network fees are paid to Bitcoin miners (not to us)
+          </Text>
+          <Text style={styles.warningText}>
+            • We do NOT hold, custody, or control your funds
+          </Text>
+        </View>
+      )}
 
       <View style={styles.actions}>
-        <TouchableOpacity
-          style={[styles.button, styles.rejectButton]}
-          onPress={handleReject}
-          disabled={loading}
-        >
-          <Text style={styles.rejectButtonText}>Reject</Text>
-        </TouchableOpacity>
+        {manualMode ? (
+          <>
+            <TouchableOpacity
+              style={[styles.button, styles.rejectButton]}
+              onPress={() => navigation.goBack()}
+            >
+              <Text style={styles.rejectButtonText}>Cancel</Text>
+            </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.button, styles.approveButton, loading && styles.buttonDisabled]}
-          onPress={handleApprove}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color={colors.cardBackground} />
-          ) : (
-            <Text style={styles.approveButtonText}>Approve Withdrawal</Text>
-          )}
-        </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, styles.approveButton, loading && styles.buttonDisabled]}
+              onPress={handleManualWithdrawalDone}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color={colors.cardBackground} />
+              ) : (
+                <Text style={styles.approveButtonText}>Done</Text>
+              )}
+            </TouchableOpacity>
+          </>
+        ) : (
+          <>
+            <TouchableOpacity
+              style={[styles.button, styles.rejectButton]}
+              onPress={handleReject}
+              disabled={loading}
+            >
+              <Text style={styles.rejectButtonText}>Reject</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.button, styles.approveButton, loading && styles.buttonDisabled]}
+              onPress={handleApprove}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color={colors.cardBackground} />
+              ) : (
+                <Text style={styles.approveButtonText}>Approve Withdrawal</Text>
+              )}
+            </TouchableOpacity>
+          </>
+        )}
       </View>
     </ScrollView>
   );
@@ -380,5 +546,80 @@ const createStyles = (colors) => StyleSheet.create({
   },
   buttonDisabled: {
     opacity: 0.6,
+  },
+  centerContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: colors.textSecondary,
+  },
+  manualModeCard: {
+    backgroundColor: '#E3F2FD',
+    margin: 20,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#BBDEFB',
+  },
+  manualModeTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0D47A1',
+    marginBottom: 8,
+  },
+  manualModeText: {
+    fontSize: 14,
+    color: '#1565C0',
+    lineHeight: 20,
+  },
+  copyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  copyIcon: {
+    marginLeft: 8,
+  },
+  addressWrapper: {
+    position: 'relative',
+  },
+  addressCopyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primary,
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 12,
+  },
+  copyButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  instructionsCard: {
+    backgroundColor: '#FFF3CD',
+    margin: 20,
+    marginTop: 0,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#FFE69C',
+  },
+  instructionsTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+    color: '#856404',
+  },
+  instructionsText: {
+    fontSize: 14,
+    color: '#856404',
+    marginBottom: 8,
+    lineHeight: 20,
   },
 });

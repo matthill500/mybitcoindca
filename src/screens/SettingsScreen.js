@@ -42,6 +42,7 @@ export default function SettingsScreen({ navigation }) {
   const [weeklyDcaAmount, setWeeklyDcaAmount] = useState('35');
   const [exchangeTradingFee, setExchangeTradingFee] = useState('0.1');
   const [walletAddress, setWalletAddress] = useState('');
+  const [appWithdrawal, setAppWithdrawal] = useState(true);
   const [selectedDay, setSelectedDay] = useState('thursday');
   const [selectedHour, setSelectedHour] = useState(8);
 
@@ -60,6 +61,7 @@ export default function SettingsScreen({ navigation }) {
         setWeeklyDcaAmount(settings.weeklyDcaAmount?.toString() || '35');
         setExchangeTradingFee(settings.exchangeTradingFee?.toString() || '0.1');
         setWalletAddress(settings.hardwareWalletAddress || '');
+        setAppWithdrawal(settings.appWithdrawal ?? true);
         setSelectedDay(settings.purchaseSchedule?.dayOfWeek || 'thursday');
         setSelectedHour(settings.purchaseSchedule?.hour ?? 8);
       }
@@ -109,6 +111,7 @@ export default function SettingsScreen({ navigation }) {
         weeklyDcaAmount: amount,
         exchangeTradingFee: fee,
         hardwareWalletAddress: trimmedWalletAddress,
+        appWithdrawal: appWithdrawal,
         purchaseSchedule: {
           dayOfWeek: selectedDay,
           hour: selectedHour,
@@ -338,6 +341,34 @@ export default function SettingsScreen({ navigation }) {
         </View>
 
         <Text style={styles.sectionTitle}>Withdrawal Settings</Text>
+
+        {/* App Withdrawal Toggle */}
+        <View style={styles.inputGroup}>
+          <View style={styles.settingRow}>
+            <View style={styles.settingLeft}>
+              <Ionicons
+                name="phone-portrait"
+                size={24}
+                color={colors.secondary}
+                style={styles.settingIcon}
+              />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.label}>App Withdrawal Mode</Text>
+                <Text style={styles.description}>
+                  {appWithdrawal
+                    ? 'Withdrawals execute automatically through the app. You MUST enable "Enable Withdrawals" in your Binance API settings.'
+                    : 'You will withdraw manually in Binance. Do NOT enable "Enable Withdrawals" in your Binance API settings.'}
+                </Text>
+              </View>
+            </View>
+            <Switch
+              value={appWithdrawal}
+              onValueChange={setAppWithdrawal}
+              trackColor={{ false: colors.border, true: colors.secondary }}
+              thumbColor="#fff"
+            />
+          </View>
+        </View>
 
         {/* Bitcoin Wallet Address */}
         <View style={styles.inputGroup}>

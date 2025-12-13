@@ -224,6 +224,22 @@ export default function APIKeysScreen({ navigation }) {
         </View>
       )}
 
+      <View style={styles.infoCard}>
+        <Text style={styles.infoTitle}>💡 App Withdrawal Mode</Text>
+        <Text style={styles.infoText}>
+          • Turn OFF App Withdrawal Mode in Settings to avoid granting withdrawal permissions to your API keys
+        </Text>
+        <Text style={styles.infoText}>
+          • With App Withdrawal Mode OFF: Do NOT enable "Enable Withdrawals" in Binance API settings
+        </Text>
+        <Text style={styles.infoText}>
+          • You'll receive withdrawal instructions with copy buttons instead of automatic execution
+        </Text>
+        <Text style={styles.infoText}>
+          • This provides extra security by keeping withdrawal permissions completely disabled on your API keys
+        </Text>
+      </View>
+
       <View style={styles.instructionsCard}>
         <Text style={styles.instructionsTitle}>How to get your API keys:</Text>
         <Text style={styles.instructionsText}>
@@ -236,10 +252,16 @@ export default function APIKeysScreen({ navigation }) {
           3. Create a new API key
         </Text>
         <Text style={styles.instructionsText}>
-          4. Enable "Enable Withdrawals" and "Enable Spot & Margin Trading"
+          4. Enable "Enable Spot & Margin Trading" (required)
         </Text>
         <Text style={styles.instructionsText}>
-          5. Whitelist a dedicated IP (recommended: use a VPN service with a static IP)
+          5. Enable "Enable Withdrawals" ONLY if App Withdrawal Mode is ON
+        </Text>
+        <Text style={styles.instructionsText}>
+          6. Do NOT enable "Enable Withdrawals" if App Withdrawal Mode is OFF
+        </Text>
+        <Text style={styles.instructionsText}>
+          7. Whitelist a dedicated IP (recommended: use a VPN service with a static IP)
         </Text>
       </View>
     </ScrollView>
