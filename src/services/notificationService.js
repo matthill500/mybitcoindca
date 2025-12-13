@@ -112,6 +112,7 @@ export function parseWithdrawalNotification(notification) {
       btcAmount: data.btcAmount,
       address: data.address,
       requestId: data.requestId,
+      appWithdrawal: data.appWithdrawal,
     };
   }
 

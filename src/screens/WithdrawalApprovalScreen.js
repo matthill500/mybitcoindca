@@ -26,7 +26,15 @@ export default function WithdrawalApprovalScreen({ route, navigation }) {
 
   useEffect(() => {
     fetchNetworkFee();
-    fetchSettings();
+    // Use appWithdrawal from notification data if available
+    if (withdrawalData.appWithdrawal !== undefined) {
+      // appWithdrawal: true = app mode, false = manual mode
+      setManualMode(!withdrawalData.appWithdrawal);
+      setLoadingSettings(false);
+    } else {
+      // Fallback to fetching settings if not in notification data (backwards compatibility)
+      fetchSettings();
+    }
   }, []);
 
   const fetchSettings = async () => {
