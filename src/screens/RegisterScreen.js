@@ -5,8 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
   Alert,
   ActivityIndicator,
   ScrollView,
@@ -77,11 +75,7 @@ export default function RegisterScreen({ navigation }) {
   const styles = createStyles(colors);
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
-    >
+    <View style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
@@ -175,7 +169,7 @@ export default function RegisterScreen({ navigation }) {
           </View>
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 
@@ -190,7 +184,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   content: {
     padding: 20,
-    paddingTop: 40,
+    paddingTop: 80,
   },
   title: {
     fontSize: 32,
